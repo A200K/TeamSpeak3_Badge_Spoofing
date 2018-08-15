@@ -8,6 +8,7 @@ SignatureScan mainModuleSigScan;
 uintptr_t ulSendCommand = 0;
 uintptr_t ulGetTeamSpeakPacketHandler = 0;
 uintptr_t ulPrepareCommandStructForLength = 0;
+uintptr_t ulGetCurrentConnectionHandlerId = 0;
 
 class CommandStruct
 {
@@ -58,13 +59,23 @@ void PrepareCommandStruct( CommandStruct *pStruct, const char *pCommand )
 	memcpy( pStruct->m_CommandData->m_pCommandString, pCommand, pStruct->m_CommandLength );
 }
 
+// One could use ts3Functions.getCurrentServerConnectionHandlerID as well, but this way 
+// you could inject this dll into the teamspeak process and it would still work, considering you call OnInit from DllMain
+uintptr_t GetCurrentConnectionHandlerId( )
+{
+	typedef __int64 (__cdecl *GetCurrentConnectionHandlerId_t)( );
+	GetCurrentConnectionHandlerId_t GetCurrentConnectionHandlerId = reinterpret_cast<GetCurrentConnectionHandlerId_t>( ulGetCurrentConnectionHandlerId );
+
+	return GetCurrentConnectionHandlerId( );
+}
+
 // Since the ts3 plugin api does not provide any way to send raw commands to the server, we have to build our own function
 uintptr_t SendCommandToServer( const char *pCommand )
 {
 	typedef __int64( __fastcall *SendCommand_t )( __int64 thisptr, CommandStruct *pCommandStruct, char *a3, BYTE *a4, __int64 a5, char a6 );
 	SendCommand_t SendCommand = reinterpret_cast<SendCommand_t>( ulSendCommand );
-
-	uintptr_t ulConnectionHandler = GetConnectionHandlerAddressById( ts3Functions.getCurrentServerConnectionHandlerID( ) );
+	
+	uintptr_t ulConnectionHandler = GetConnectionHandlerAddressById( GetCurrentConnectionHandlerId( ) );
 
 	CommandStruct s = { 0 };
 	PrepareCommandStruct( &s, pCommand );
@@ -106,13 +117,19 @@ void OnConnectedToServer( )
 	SendCommandToServer( "clientupdate client_badges=Overwolf=0:badges=94ec66de-5940-4e38-b002-970df0cf6c94,62444179-0d99-42ba-a45c-c6b1557d079a,935e5a2a-954a-44ca-aa7a-55c79285b601" );
 }
 
+int OnInit( )
+{
+	ulSendCommand = mainModuleSigScan.FindSignature( "40 55 53 56 57 41 54 41 56 48 8D AC 24 ? ? ? ? 48 81 EC ? ? ? ? 48 C7 44 24" );
+	ulGetTeamSpeakPacketHandler = mainModuleSigScan.FindSignature( "4C 8B DC 49 89 53 ? 49 89 4B ? 56" );
+	ulPrepareCommandStructForLength = mainModuleSigScan.FindSignature( "48 89 5C 24 ? 48 89 74 24 ? 41 56 48 83 EC ? 4C 8B 49" );
+	ulGetCurrentConnectionHandlerId = mainModuleSigScan.FindSignature( "48 83 EC ? 48 8B 05 ? ? ? ? 48 8D 0D ? ? ? ? 48 8B 10" );
+
+	bool bIsSuccessful = ulSendCommand && ulGetTeamSpeakPacketHandler && ulPrepareCommandStructForLength && ulGetCurrentConnectionHandlerId;
+
+	return bIsSuccessful ? 0 : 1;
+}
+
 BOOL WINAPI DllMain( HINSTANCE hModule, DWORD dwReason, LPVOID lpReserved )
 {
-	if( dwReason == DLL_PROCESS_ATTACH )
-	{
-		ulSendCommand = mainModuleSigScan.FindSignature( "40 55 53 56 57 41 54 41 56 48 8D AC 24 ? ? ? ? 48 81 EC ? ? ? ? 48 C7 44 24" );
-		ulGetTeamSpeakPacketHandler = mainModuleSigScan.FindSignature( "4C 8B DC 49 89 53 ? 49 89 4B ? 56" );
-		ulPrepareCommandStructForLength = mainModuleSigScan.FindSignature( "48 89 5C 24 ? 48 89 74 24 ? 41 56 48 83 EC ? 4C 8B 49" );
-	}
 	return TRUE;
 }

@@ -29,10 +29,10 @@ uintptr_t SignatureScan::FindSignature( const char *pSignature )
 	size_t ulDerefLength = 0;
 	size_t ulAddOffset = 0;
 
-	size_t ulSignatureLength = 0;
-	SignatureByte *pSignatureBuffer = new SignatureByte[strlen( pSignature )]( );
-
 	size_t ulSignatureStringLength = strlen( pSignature );
+	size_t ulSignatureLength = 0;
+
+	SignatureByte *pSignatureBuffer = new SignatureByte[ulSignatureStringLength]( );
 	for( size_t i = 0; i < ulSignatureStringLength; i++ )
 	{
 		if( pSignature[i] == ' ' )
@@ -122,16 +122,18 @@ uintptr_t SignatureScan::FindSignature( const char *pSignature )
 			}
 			else if( bDoDeref && ulDerefLength > 0 && bRelativeCall )
 			{
+				size_t ulInstructionLength = sizeof( uintptr_t ) == 8 ? 7 : 5;
+
 				switch( ulDerefLength )
 				{
 				case 8:
-					return static_cast<uintptr_t>( reinterpret_cast<uintptr_t>( &pStartAddress[ulCurrentIndex] ) + 5 + *reinterpret_cast<DWORD64*>( &pStartAddress[ulCurrentIndex + ulDerefOffsetStart] ) );
+					return static_cast<uintptr_t>( reinterpret_cast<uintptr_t>( &pStartAddress[ulCurrentIndex] ) + ulInstructionLength + *reinterpret_cast<DWORD64*>( &pStartAddress[ulCurrentIndex + ulDerefOffsetStart] ) );
 				case 4:
-					return static_cast<uintptr_t>( reinterpret_cast<uintptr_t>( &pStartAddress[ulCurrentIndex] ) + 5 + *reinterpret_cast<DWORD*>( &pStartAddress[ulCurrentIndex + ulDerefOffsetStart] ) );
+					return static_cast<uintptr_t>( reinterpret_cast<uintptr_t>( &pStartAddress[ulCurrentIndex] ) + ulInstructionLength + *reinterpret_cast<DWORD*>( &pStartAddress[ulCurrentIndex + ulDerefOffsetStart] ) );
 				case 2:
-					return static_cast<uintptr_t>( reinterpret_cast<uintptr_t>( &pStartAddress[ulCurrentIndex] ) + 5 + *reinterpret_cast<WORD*>( &pStartAddress[ulCurrentIndex + ulDerefOffsetStart] ) );
+					return static_cast<uintptr_t>( reinterpret_cast<uintptr_t>( &pStartAddress[ulCurrentIndex] ) + ulInstructionLength + *reinterpret_cast<WORD*>( &pStartAddress[ulCurrentIndex + ulDerefOffsetStart] ) );
 				case 1:
-					return static_cast<uintptr_t>( reinterpret_cast<uintptr_t>( &pStartAddress[ulCurrentIndex] ) + 5 + *reinterpret_cast<BYTE*>( &pStartAddress[ulCurrentIndex + ulDerefOffsetStart] ) );
+					return static_cast<uintptr_t>( reinterpret_cast<uintptr_t>( &pStartAddress[ulCurrentIndex] ) + ulInstructionLength + *reinterpret_cast<BYTE*>( &pStartAddress[ulCurrentIndex + ulDerefOffsetStart] ) );
 				}
 			}
 			return reinterpret_cast<uintptr_t>( &pStartAddress[ulCurrentIndex + ulAddOffset] );

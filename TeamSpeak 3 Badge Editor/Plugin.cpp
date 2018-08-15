@@ -33,7 +33,7 @@ void ts3plugin_setFunctionPointers( const struct TS3Functions funcs ) {
 }
 
 int ts3plugin_init( ) {
-	return 0;
+	return OnInit( );
 }
 
 void ts3plugin_shutdown( ) {
