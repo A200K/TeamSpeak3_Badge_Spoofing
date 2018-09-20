@@ -47,7 +47,8 @@ Before:<br>
 After:<br>
 <img src="https://i.imgur.com/PBriUXn.png"></img>
 
-Please do note that you won't be able to see the badges yourself, but anyone else will see them. You can see them by connecting to your currently connected server on a second tab on teamspeak.
+<b>Please do note that you won't be able to see the badges yourself, but anyone else will see them.</b> 
+You can see them by connecting to your currently connected server on a second tab on teamspeak.
 
 Since you need to hardcode the badge ids (and thus compile the project yourself) at the moment, there is no binary release for this project so far. I plan to add a GUI to easily set the badges in the future.
 
