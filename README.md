@@ -1,5 +1,12 @@
 # TeamSpeak 3 Badge Spoofing
 
+<b>This repository will be archived as TeamSpeak fixed this method in their 3.3.0 Release.</b><br>
+https://forum.teamspeak.com/threads/140245-Release-TeamSpeak-Client-3-3-0<br>
+> In previous versions of our client and/or server, it was possible to inject fake badge data. We've eliminated this problem with a new feature called Signed-Badges. If a user configures a badge in his/her myTeamSpeak account settings, the server will now validate this info and only show the badge icon if the user really possesses it.
+
+Thanks to Suphax for letting me know.<br><br>
+<hr>
+
 TeamSpeak 3 introduced badges a while ago. Badges are small icons next to your name, you can get them if you redeem the proper code for it on your MyTeamSpeak account.<br>
 <img src="https://i.imgur.com/IdmUPod.png"></img><br>
 Those codes may e.g. be distributed on some gaming related events, such as the E3 or Gamescom, or are exclusively given to TeamSpeak plugin authors.
